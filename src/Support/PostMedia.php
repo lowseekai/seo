@@ -31,7 +31,15 @@ class PostMedia
      */
     public static function text(string $html): string
     {
-        return trim(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5));
+        $text = trim(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5));
+
+        // [pay]...[/pay] 只是正文里的纯文本标记，strip_tags 不会处理，会把付费内容
+        // （作者给的 API key 之类）带进 schema.org 的 text。帖子问答节点
+        // （DiscussionBestAnswerPage 的 answer / suggestedAnswer）和回复的 comment[] 都经过
+        // 这一层，所以在这里统一脱敏（DiscussionPage 的正文 text 另有一处同样处理）。
+        $redacted = preg_replace('/\[\s*pay\s*\].*?(?:\[\s*\/\s*pay\s*\]|\z)/is', '付费内容', $text);
+
+        return $redacted ?? $text;
     }
 
     /**
