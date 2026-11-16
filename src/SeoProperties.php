@@ -69,6 +69,10 @@ class SeoProperties
     {
         $description = strip_tags($content);
 
+        // [pay]...[/pay] 只是纯文本标记，strip_tags 不会处理，会把付费内容（API key）
+        // 原样带进 description / og:description，链接预览（TG、微信、搜索引擎）会直接泄露。
+        $description = preg_replace('/\[\s*pay\s*\].*?(?:\[\s*\/\s*pay\s*\]|\z)/is', '付费内容', $description);
+
         return trim(preg_replace('/\s+/', ' ', mb_substr($description, 0, 157))).(mb_strlen($description) > 157 ? '...' : '');
     }
 

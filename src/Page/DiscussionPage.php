@@ -247,6 +247,10 @@ class DiscussionPage implements PageDriverInterface
             // then decode entities and strip tags for clean plain text.
             $text = trim(html_entity_decode(strip_tags($firstPost->formatContent()), ENT_QUOTES | ENT_HTML5));
 
+            // [pay]...[/pay] 是纯文本标记，strip_tags 之后仍然在，会把付费内容写进
+            // schema.org 的 text 字段（页面 JSON-LD / 链接预览都会读取）。
+            $text = preg_replace('/\[\s*pay\s*\].*?(?:\[\s*\/\s*pay\s*\]|\z)/is', '付费内容', $text);
+
             if ($text !== '') {
                 $properties->setSchemaJson('text', $text);
             }
